@@ -74,27 +74,41 @@
 
     function harReader (data) {
       const { log } = data
+
       // 在 pages 中记录的 startedDateTime
       const pagesStarted = new Date(log.pages[0].startedDateTime)
-      // 第一个请求（主页面）的 startedDateTime
-      const indexStarted = new Date(log.entries[0].startedDateTime)
-      // 谷歌浏览器导出的 har 文件中，pagesStarted 晚于 indexStarted
+      // 第一个请求（通常是主页面）的 startedDateTime
+      const firstStarted = new Date(log.entries[0].startedDateTime)
+      // 谷歌浏览器导出的 har 文件中，pagesStarted 可能晚于 firstStarted
       // 所以在这里获取更早的那个时间点
-      const theStarted = Math.min(pagesStarted, indexStarted)
+      const theStarted = Math.min(pagesStarted, firstStarted)
 
       const entries = log.entries.map((item, index) => {
+        // 请求被加入队列的时间点
         const queued = new Date(item.startedDateTime).getTime() - theStarted
+        // 请求在队列中等待的时长
         const queueing = item.timings._blocked_queueing
+        // 请求等待结束的时间点
         const started = queued + queueing
+        // 浏览器得到指令到发出请求的时长
         const stalled = item.timings.blocked - queueing
+        // 请求和服务端的连接开始的时间点
         const connectionStart = started + stalled
+        // DNS 查询的时长
         const dnsLookup = item.timings.dns === -1 ? 0 : item.timings.dns
+        // 建立 TCP 连接的时长
         const initialConnection = item.timings.connect === -1 ? 0 : item.timings.connect
+        // SSL 认证的时长
         const ssl = item.timings.ssl === -1 ? 0 : item.timings.ssl
+        // 请求开始的时间点
         const requestStart = connectionStart + dnsLookup + initialConnection + ssl
+        // 请求发送（第一个字节到最后一个字节）的持续时间
         const requestSent = item.timings.send
+        // 从发出请求最后一个字节到收到响应第一个字节的持续时间
         const waiting = item.timings.wait
+        // 响应接收（第一个字节到最后一个字节）的持续时间
         const contentDownload = item.timings.receive
+        // 请求结束的时间点
         const requestEnd = requestStart + requestSent + waiting + contentDownload
 
         const url = new URL(item.request.url)
@@ -103,17 +117,17 @@
         return {
           id: index,
           request: {
-            dir: url.origin + path[1],
-            base: path[2] || '/'
+            base: (path[2] || '/') + url.search,
+            dir: url.origin + path[1]
           },
           queued: queued.toFixed(3),
           queueing: queueing.toFixed(3),
           started: started.toFixed(3),
           stalled: stalled.toFixed(3),
           connectionStart: connectionStart.toFixed(3),
-          dnsLookup: dnsLookup.toFixed(3),
-          initialConnection: initialConnection.toFixed(3),
-          ssl: ssl.toFixed(3),
+          dnsLookup: dnsLookup && dnsLookup.toFixed(3),
+          initialConnection: initialConnection && initialConnection.toFixed(3),
+          ssl: ssl && ssl.toFixed(3),
           requestStart: requestStart.toFixed(3),
           requestSent: requestSent.toFixed(3),
           waiting: waiting.toFixed(3),
