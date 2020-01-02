@@ -195,6 +195,8 @@
         setEntries(data)
         setOrigin(data)
         setVerCheckedList([...httpVersion])
+        // 重置排序
+        setSort([0, 0])
       }, [])
 
       // 将资源按各个阶段时间升/降序排列
