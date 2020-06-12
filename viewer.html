@@ -3,34 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>HAR Viewer</title>
+  <link rel="stylesheet" href="poplar.css">
   <style>
-    * {
-      box-sizing: border-box;
-      font: inherit;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-size: 12px;
-    }
-
     table {
-      border-collapse: collapse;
-      border-spacing: 0;
-      width: 100%;
+      font-size: 12px;
     }
     tbody > tr:hover {
       background-color: #e8e8e8;
     }
     th,
     td {
-      border: 1px solid #666;
+      border: 1px solid #999;
       padding: 4px;
-    }
-    th {
-      font-weight: bolder;
-      text-align: left;
     }
 
     .ver__container {
@@ -38,8 +22,9 @@
     }
     .ver__list {
       background-color: #fff;
+      border: 1px solid #999;
       font-weight: normal;
-      left: 0;
+      left: -1px;
       position: absolute;
       top: 100%;
       width: 100%;
